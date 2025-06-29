@@ -35,13 +35,21 @@ const router = express.Router();
 
 router.post("/", (req, res) => {
   const { message } = req.body;
+  console.log("Message from user:", message);
+  let reply = "Sorry, I didn't understand. Please try asking about fever, headache, etc.";
 
-  let reply = "Sorry, I didn't understand.";
+  if (!message) {
+    return res.status(400).json({ reply: "Message cannot be empty" });
+  }
 
-  if (message.toLowerCase().includes("fever")) {
+  const lowerMessage = message.toLowerCase();
+
+  if (lowerMessage.includes("fever")) {
     reply = "For fever, Paracetamol is commonly used. Please consult a doctor.";
-  } else if (message.toLowerCase().includes("headache")) {
+  } else if (lowerMessage.includes("headache")) {
     reply = "Try using Crocin or consult your pharmacist.";
+  } else if (lowerMessage.includes("cold")) {
+    reply = "Antihistamines like cetirizine can help with cold. Stay hydrated!";
   }
 
   res.json({ reply });

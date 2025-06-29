@@ -1,7 +1,7 @@
 const Medicine = require("../models/Medicine");
 
 const createMedicine = async (req, res) => {
-  const {
+  try{const {
     name,
     description,
     brand,
@@ -23,8 +23,11 @@ const createMedicine = async (req, res) => {
     requiresPrescription,
   });
 
-  const created = await medicine.save();
-  res.status(201).json(created);
+   const savedMedicine = await medicine.save();
+    res.status(201).json(savedMedicine);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to add medicine", error: err.message });
+  }
 };
 
 const getMedicines = async (req, res) => {
@@ -32,15 +35,15 @@ const getMedicines = async (req, res) => {
   res.json(medicines);
 };
 
-const addMedicine = async (req, res) => {
-  try {
-    const medicine = new Medicine(req.body);
-    const saved = await medicine.save();
-    res.status(201).json(saved);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-};
+// const addMedicine = async (req, res) => {
+//   try {
+//     const medicine = new Medicine(req.body);
+//     const saved = await medicine.save();
+//     res.status(201).json(saved);
+//   } catch (err) {
+//     res.status(400).json({ message: err.message });
+//   }
+// };
 const getMedicineById = async (req, res) => {
   try {
     const medicine = await Medicine.findById(req.params.id);
@@ -87,7 +90,7 @@ const deleteMedicine = async (req, res) => {
 module.exports = {
   createMedicine,
   getMedicines,
-  addMedicine,
+  // addMedicine,
   getMedicineById,
   updateMedicine,
   deleteMedicine,

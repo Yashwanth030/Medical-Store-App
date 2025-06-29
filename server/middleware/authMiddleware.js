@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
+
 const protect = async (req, res, next) => {
   let token;
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
@@ -16,7 +17,7 @@ const protect = async (req, res, next) => {
   if (!token) return res.status(401).json({ message: "Not authorized, no token" });
 };
 
-const admin = (req, res, next) => {
+const adminOnly = (req, res, next) => {
   if (req.user && req.user.role === "admin") {
     return next();
   } else {
@@ -24,4 +25,4 @@ const admin = (req, res, next) => {
   }
 };
 
-module.exports = { protect, admin };
+module.exports = { protect, adminOnly };

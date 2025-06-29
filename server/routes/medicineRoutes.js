@@ -1,23 +1,34 @@
 const express = require("express");
 const router = express.Router();
-const upload = require("../middleware/uploadMiddleware");
+const path = require("path");
+const multer = require("multer");
 
+const { protect, adminOnly } = require("../middleware/authMiddleware");
 const {
-  createMedicine,     // If this and addMedicine are different, keep both
-  addMedicine,
+  createMedicine,
   getMedicines,
   getMedicineById,
   updateMedicine,
   deleteMedicine,
 } = require("../controllers/medicineController");
 
-const { protect, admin } = require("../middleware/authMiddleware");
+// ✅ Multer storage configuration
+const storage = multer.diskStorage({
+  destination(req, file, cb) {
+    cb(null, "uploads/"); // Make sure this folder exists
+  },
+  filename(req, file, cb) {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
 
-// Route to create medicine with image upload
+const upload = multer({ storage });
+
+// ✅ Upload route (Admin only)
 router.post(
   "/upload",
   protect,
-  admin,
+  adminOnly,
   upload.single("image"),
   async (req, res) => {
     try {
@@ -31,15 +42,16 @@ router.post(
         requiresPrescription,
       } = req.body;
 
-      const medicine = new (require("../models/Medicine"))({
+      const Medicine = require("../models/Medicine");
+      const medicine = new Medicine({
         name,
         description,
         brand,
         category,
         price,
         countInStock,
-        imageUrl: `/uploads/${req.file.filename}`,
         requiresPrescription,
+        imageUrl: `/uploads/${req.file.filename}`,
       });
 
       const saved = await medicine.save();
@@ -50,11 +62,11 @@ router.post(
   }
 );
 
+// ✅ Other CRUD routes
 router.get("/", getMedicines);
-router.post("/add", protect, admin, addMedicine);  // Or use createMedicine if needed
-router.post("/", protect, admin, createMedicine);  // You can remove one of these if redundant
+router.post("/", protect, adminOnly, createMedicine); // Create without image
 router.get("/:id", getMedicineById);
-router.put("/:id", protect, admin, updateMedicine);
-router.delete("/:id", protect, admin, deleteMedicine);
+router.put("/:id", protect, adminOnly, updateMedicine);
+router.delete("/:id", protect, adminOnly, deleteMedicine);
 
 module.exports = router;
