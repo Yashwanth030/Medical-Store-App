@@ -1,0 +1,8 @@
+#Server side
+node_modules/
+uploads/
+.env
+
+# Client side
+client/node_modules/
+dist/
