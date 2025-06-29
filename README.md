@@ -3,11 +3,11 @@ Project Overview
 This application is a personal medical store management system designed for a single predefined admin and multiple users. Users can place orders by selecting medicines or uploading handwritten medicine requests. The admin manages inventory and monitors all user orders.
 
 ## Key Functionalities Completed
-User Side
+### User Side
 User registration and login with JWT-based authentication.
 Browse available medicines added by the admin.
 
-## Place orders by:
+### Place orders by:
 
 Selecting medicines from the list.
 Uploading an image (handwritten slip or prescription).
@@ -20,7 +20,7 @@ Basic chatbot for medicine-related queries (test version with static answers).
 Predefined admin creation script (createAdmin.js).
 Admin login and session-based access control.
 
-## Admin can:
+### Admin can:
 
 Add, edit, delete medicines (with image upload support).
 View all orders placed by users.
@@ -30,7 +30,7 @@ Update delivery/payment status if needed.
 ## Technical Tasks Completed
 MongoDB database connection and schema design (User, Medicine, Order models).
 
-## API routes:
+### API routes:
 
 /api/users, /api/auth, /api/medicines, /api/orders, /api/chatbot
 File upload setup using multer.
