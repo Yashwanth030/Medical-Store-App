@@ -1,9 +1,9 @@
 # Medical Store Web Application – Summary
-🔹 Project Overview
+Project Overview
 This application is a personal medical store management system designed for a single predefined admin and multiple users. Users can place orders by selecting medicines or uploading handwritten medicine requests. The admin manages inventory and monitors all user orders.
 
 ## Key Functionalities Completed
-👤 User Side
+User Side
 User registration and login with JWT-based authentication.
 Browse available medicines added by the admin.
 
