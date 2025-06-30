@@ -64,7 +64,8 @@ router.post(
 
 // ✅ Other CRUD routes
 router.get("/", getMedicines);
-router.post("/", protect, adminOnly, createMedicine); // Create without image
+router.post("/", protect, adminOnly, upload.single("image"), createMedicine);
+ 
 router.get("/:id", getMedicineById);
 router.put("/:id", protect, adminOnly, updateMedicine);
 router.delete("/:id", protect, adminOnly, deleteMedicine);

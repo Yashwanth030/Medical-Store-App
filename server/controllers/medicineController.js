@@ -1,49 +1,53 @@
 const Medicine = require("../models/Medicine");
 
+// ✅ CREATE MEDICINE — with optional image upload
 const createMedicine = async (req, res) => {
-  try{const {
-    name,
-    description,
-    brand,
-    category,
-    price,
-    countInStock,
-    imageUrl,
-    requiresPrescription,
-  } = req.body;
+  try {
+    const {
+      name,
+      description,
+      brand,
+      category,
+      price,
+      countInStock,
+      requiresPrescription,
+    } = req.body;
 
-  const medicine = new Medicine({
-    name,
-    description,
-    brand,
-    category,
-    price,
-    countInStock,
-    imageUrl,
-    requiresPrescription,
-  });
+    const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
-   const savedMedicine = await medicine.save();
+    const medicine = new Medicine({
+      name,
+      description,
+      brand,
+      category,
+      price,
+      countInStock,
+      requiresPrescription,
+      image: imagePath, // ✅ Ensure your Mongoose model has `image`
+    });
+
+    const savedMedicine = await medicine.save();
     res.status(201).json(savedMedicine);
   } catch (err) {
-    res.status(500).json({ message: "Failed to add medicine", error: err.message });
+    console.error("❌ Failed to create medicine:", err.message);
+    res.status(500).json({
+      message: "Failed to add medicine",
+      error: err.message,
+    });
   }
 };
 
+// ✅ GET ALL MEDICINES
 const getMedicines = async (req, res) => {
-  const medicines = await Medicine.find();
-  res.json(medicines);
+  try {
+    const medicines = await Medicine.find();
+    res.json(medicines);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
-// const addMedicine = async (req, res) => {
-//   try {
-//     const medicine = new Medicine(req.body);
-//     const saved = await medicine.save();
-//     res.status(201).json(saved);
-//   } catch (err) {
-//     res.status(400).json({ message: err.message });
-//   }
-// };
+// ✅ GET MEDICINE BY ID
 const getMedicineById = async (req, res) => {
   try {
     const medicine = await Medicine.findById(req.params.id);
@@ -56,10 +60,11 @@ const getMedicineById = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// ✅ UPDATE MEDICINE
 const updateMedicine = async (req, res) => {
   try {
     const medicine = await Medicine.findById(req.params.id);
-
     if (medicine) {
       Object.assign(medicine, req.body);
       const updated = await medicine.save();
@@ -71,10 +76,11 @@ const updateMedicine = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// ✅ DELETE MEDICINE
 const deleteMedicine = async (req, res) => {
   try {
     const medicine = await Medicine.findById(req.params.id);
-
     if (medicine) {
       await medicine.remove();
       res.json({ message: "Medicine deleted successfully" });
@@ -86,13 +92,11 @@ const deleteMedicine = async (req, res) => {
   }
 };
 
-// controllers/medicineController.js
+// ✅ EXPORT ALL CONTROLLERS
 module.exports = {
   createMedicine,
   getMedicines,
-  // addMedicine,
   getMedicineById,
   updateMedicine,
   deleteMedicine,
 };
-

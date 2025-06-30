@@ -1,56 +1,58 @@
-import React from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { logout } from "../features/auth/authSlice";
-import { Link } from "react-router-dom";
-import { BsChatDots } from "react-icons/bs";
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../features/auth/authSlice';
 
-function Navbar() {
+export default function Navbar() {
+  const { userInfo } = useSelector((state) => state.auth);
+  const { cartItems } = useSelector((state) => state.cart);
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.auth.user);
-  const isAuth = useSelector((state) => state.auth.isAuthenticated);
+  const navigate = useNavigate();
+
+  const totalQuantity = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   const handleLogout = () => {
     dispatch(logout());
+    localStorage.removeItem('token');
+    navigate('/login');
   };
 
   return (
-    <nav>
-      <h3>Medical Store</h3>
-      {isAuth ? (
-        <>
-          <span>Welcome, {user?.name}</span>
-          <button onClick={handleLogout}>Logout</button>
-        </>
-      ) : (
-        <Link to="/login">Login</Link>
-      )}
+    <nav className="fixed top-0 left-0 right-0 bg-white shadow-md z-50 px-6 py-3 flex justify-between items-center">
+      <Link to="/" className="text-xl font-bold text-blue-700">🧪 MedStore</Link>
 
-      {isAuth && (
-        <Link to="/chatbot">
-          <div
-            style={{
-              position: "fixed",
-              bottom: "20px",
-              right: "20px",
-              backgroundColor: "#007bff",
-              borderRadius: "50%",
-              width: "60px",
-              height: "60px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "white",
-              fontSize: "28px",
-              cursor: "pointer",
-              zIndex: 1000,
-            }}
-          >
-            <BsChatDots />
-          </div>
-        </Link>
-      )}
+      <ul className="flex items-center gap-6">
+        {userInfo && userInfo.role !== 'admin' && (
+          <>
+            <li>
+              <Link to="/home" className="hover:underline text-gray-700">Home</Link>
+            </li>
+            <li>
+              <Link
+                to="/cart"
+                className="hover:underline text-gray-700 bg-blue-100 px-3 py-1 rounded-full"
+              >
+                🛒 Cart ({totalQuantity})
+              </Link>
+            </li>
+          </>
+        )}
+
+        {userInfo ? (
+          <li>
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+            >
+              Logout
+            </button>
+          </li>
+        ) : (
+          <li>
+            <Link to="/login" className="text-blue-600 hover:underline">Login</Link>
+          </li>
+        )}
+      </ul>
     </nav>
   );
 }
-
-export default Navbar;

@@ -1,62 +1,88 @@
-// src/pages/RegisterPage.jsx
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { registerUser } from '../features/auth/authSlice';
+import { useNavigate } from 'react-router-dom';
 
-function RegisterPage() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+export default function RegisterPage() {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { loading, error } = useSelector((state) => state.auth);
 
-  const handleRegister = async (e) => {
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+  });
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      const res = await fetch("/api/users/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        alert("Successfully registered. Try logging in.");
-        navigate("/login");
-      } else {
-        alert(data.message || "Registration failed");
-      }
-    } catch (error) {
-      alert("Error during registration");
-    }
+    dispatch(registerUser(form))
+      .unwrap()
+      .then((res) => {
+        // ✅ Role-based redirection
+        if (res.role === 'admin') {
+          navigate('/admin-dashboard');
+        } else {
+          navigate('/');
+        }
+      })
+      .catch(() => {});
   };
 
   return (
-    <form onSubmit={handleRegister}>
-      <h2>Register</h2>
-      <input
-        type="text"
-        placeholder="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        required
-      />
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
-      <button type="submit">Register</button>
-    </form>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-100 to-indigo-200">
+      <div className="bg-white shadow-md rounded-xl p-8 w-full max-w-md">
+        <h2 className="text-2xl font-bold text-center text-indigo-700 mb-6">Register</h2>
+
+        {error && <div className="mb-4 text-red-600 text-sm">{error}</div>}
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-sm mb-1 text-gray-600">Name</label>
+            <input
+              type="text"
+              name="name"
+              className="w-full border rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm mb-1 text-gray-600">Email</label>
+            <input
+              type="email"
+              name="email"
+              className="w-full border rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm mb-1 text-gray-600">Password</label>
+            <input
+              type="password"
+              name="password"
+              className="w-full border rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg transition-all"
+            disabled={loading}
+          >
+            {loading ? 'Registering...' : 'Register'}
+          </button>
+        </form>
+      </div>
+    </div>
   );
 }
-
-export default RegisterPage;
