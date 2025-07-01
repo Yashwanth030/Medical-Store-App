@@ -1,16 +1,33 @@
 const express = require("express");
 const router = express.Router();
-const Order = require("../models/Order");
-const { protect } = require("../middleware/authMiddleware");
 
-// 🧾 Get orders for the logged-in user
-router.get("/myorders", protect, async (req, res) => {
-  try {
-    const orders = await Order.find({ user: req.user._id }).populate("orderItems.medicine", "name price");
-    res.status(200).json(orders);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch user orders" });
-  }
-});
+const {
+  createOrder,
+  confirmOrder,
+  getMyOrders,
+  getAllOrders,
+  confirmPrescriptionOrder,
+  getPendingPrescriptions,
+} = require("../controllers/orderController");
+
+const { protect, adminOnly } = require("../middleware/authMiddleware");
+
+// ✅ Create new order (customer)
+router.post("/", protect, createOrder);
+
+// ✅ Get logged-in customer's orders
+router.get("/myorders", protect, getMyOrders);
+
+// ✅ Admin gets all orders (with optional date filter)
+router.get("/", protect, adminOnly, getAllOrders);
+
+// ✅ Admin confirms a direct cart order (non-prescription)
+router.put("/:id/confirm", protect, adminOnly, confirmOrder);
+
+// ✅ Admin: Get all pending prescription uploads
+router.get("/prescriptions", protect, adminOnly, getPendingPrescriptions);
+
+// ✅ Admin confirms prescription upload manually
+router.put("/confirm/:id", protect, adminOnly, confirmPrescriptionOrder);
 
 module.exports = router;

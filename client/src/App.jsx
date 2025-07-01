@@ -12,6 +12,11 @@ import Chatbot from "./components/Chatbot";
 import HomePage from "./pages/HomePage";
 import ChatbotWidget from "./components/ChatbotWidget";
 import CartPage from "./pages/CartPage";
+import UploadPrescription from "./pages/UploadPrescription";
+import PrescriptionOrders from './pages/Admin/PrescriptionOrders';
+import Orders from "./pages/Orders";
+
+
 
 function App() {
   // ✅ Grab user info from Redux auth state
@@ -98,6 +103,27 @@ function App() {
               </PrivateRoute>
             }
           /> */}
+<Route path="/upload-prescription"
+  element={<PrivateRoute allowedRoles={["customer", "user"]}>
+      <UploadPrescription />
+    </PrivateRoute>}/>
+    <Route
+  path="/admin/prescriptions"
+  element={
+    <PrivateRoute allowedRoles={["admin"]}>
+      <PrescriptionOrders />
+    </PrivateRoute>
+  }
+/>
+
+<Route
+  path="/orders"
+  element={
+    <PrivateRoute allowedRoles={["customer", "user"]}>
+      <Orders />
+    </PrivateRoute>
+  }
+/>
 
           {/* ✅ Fallback: redirect unknown routes */}
           <Route path="*" element={<Navigate to="/" />} />

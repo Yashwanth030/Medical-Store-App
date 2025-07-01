@@ -1,10 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { removeFromCart } from '../features/cart/cartSlice';
 
 export default function CartPage() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { cartItems } = useSelector((state) => state.cart);
+  const { userInfo } = useSelector((state) => state.auth);
+
+  const [paymentMethod, setPaymentMethod] = useState('COD');
 
   const handleRemove = (id) => {
     dispatch(removeFromCart(id));
@@ -12,6 +18,38 @@ export default function CartPage() {
 
   const totalQuantity = cartItems.reduce((acc, item) => acc + item.quantity, 0);
   const totalAmount = cartItems.reduce((acc, item) => acc + item.quantity * item.price, 0);
+
+  const handleCheckout = async () => {
+    if (cartItems.length === 0) {
+      alert('Cart is empty.');
+      return;
+    }
+
+    try {
+      const orderData = {
+        orderItems: cartItems.map((item) => ({
+          medicine: item._id,
+          qty: item.quantity,
+          price: item.price,
+        })),
+        totalPrice: totalAmount,
+        paymentMethod,
+      };
+
+      await axios.post('/api/orders', orderData, {
+        headers: {
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+      });
+
+      alert('Order placed successfully!');
+      // Optional: dispatch(clearCart()); // if you have a clearCart action
+      navigate('/orders'); // create MyOrders page next
+    } catch (err) {
+      console.error(err);
+      alert('Failed to place order.');
+    }
+  };
 
   return (
     <div className="p-6">
@@ -56,6 +94,31 @@ export default function CartPage() {
             ))}
           </div>
 
+          {/* 🔹 Payment Selection */}
+          <div className="mt-6">
+            <label className="font-semibold">Select Payment Method:</label>
+            <div className="flex gap-6 mt-2">
+              <label>
+                <input
+                  type="radio"
+                  value="COD"
+                  checked={paymentMethod === 'COD'}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                />
+                <span className="ml-2">Cash on Delivery</span>
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  value="UPI"
+                  checked={paymentMethod === 'UPI'}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                />
+                <span className="ml-2">UPI/PhonePe</span>
+              </label>
+            </div>
+          </div>
+
           <div className="mt-6 text-right">
             <p className="text-lg font-semibold text-gray-800">
               Total Items: <span className="text-blue-700">{totalQuantity}</span>
@@ -64,7 +127,7 @@ export default function CartPage() {
               Total Amount: ₹{totalAmount.toFixed(2)}
             </p>
             <button
-              onClick={() => alert('Checkout process coming soon...')}
+              onClick={handleCheckout}
               className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded"
             >
               Proceed to Checkout

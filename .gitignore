@@ -6,3 +6,5 @@ uploads/
 # Client side
 client/node_modules/
 dist/
+ 
+text

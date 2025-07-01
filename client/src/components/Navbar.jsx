@@ -35,6 +35,36 @@ export default function Navbar() {
                 🛒 Cart ({totalQuantity})
               </Link>
             </li>
+            <li>
+              <Link
+                to="/upload-prescription"
+                className="hover:underline text-blue-600 font-medium"
+              >
+                📤 Upload Prescription
+              </Link>
+            </li>
+            <li>
+  <Link
+    to="/orders"
+    className="hover:underline text-blue-600 font-medium"
+  >
+    📜 My Orders
+  </Link>
+</li>
+
+          </>
+        )}
+
+        {userInfo && userInfo.role === 'admin' && (
+          <>
+            <li>
+              <Link to="/admin-dashboard" className="hover:underline text-gray-700">Dashboard</Link>
+            </li>
+            <li>
+              <Link to="/admin/prescriptions" className="hover:underline text-blue-700">
+                📝 View Prescriptions
+              </Link>
+            </li>
           </>
         )}
 
