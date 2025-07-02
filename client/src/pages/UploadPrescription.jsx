@@ -29,25 +29,28 @@ export default function UploadPrescription() {
       const formData = new FormData();
       formData.append("image", file); // ✅ Backend expects 'image' for Multer
       const uploadRes = await axios.post("/api/upload/prescription", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${userInfo.token}`,
-        },
-      });
+  headers: {
+    "Content-Type": "multipart/form-data",
+    Authorization: `Bearer ${userInfo.token}`,
+  },
+});
+
 
       const filePath = uploadRes.data.filePath; // returned from upload route
 
       // 2. Submit the prescription order
-      const orderRes = await axios.post("/api/orders", {
-        orderItems: [],
-        totalPrice: 0,
-        paymentMethod,
-        prescriptionImage: filePath,
-      }, {
-        headers: {
-          Authorization: `Bearer ${userInfo.token}`,
-        },
-      });
+     const orderRes = await axios.post("/api/orders", {
+  orderItems: [],
+  totalPrice: 0,
+  paymentMethod,
+  prescriptionImage: filePath,
+  shippingAddress: "Prescription-based order - Address will be confirmed later"
+}, {
+  headers: {
+    Authorization: `Bearer ${userInfo.token}`,
+  },
+});
+
 
       alert("Prescription uploaded and order created!");
       navigate("/orders");

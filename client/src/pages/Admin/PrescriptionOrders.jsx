@@ -35,16 +35,22 @@ export default function PrescriptionOrders() {
     fetchOrders();
   }, []);
 
-  const handleImageClick = async (imageUrl) => {
-    setSelectedImage(imageUrl);
-    setOcrText("Extracting...");
-    try {
-      const result = await Tesseract.recognize(imageUrl, "eng");
-      setOcrText(result.data.text);
-    } catch (error) {
-      setOcrText("Failed to extract text");
-    }
-  };
+  const handleImageClick = async (imagePath) => {
+  const fullImageUrl = `${import.meta.env.VITE_API_BASE}${imagePath}`;
+  setSelectedImage(fullImageUrl);
+  setOcrText("Extracting...");
+
+  try {
+    const result = await Tesseract.recognize(fullImageUrl, "eng", {
+      logger: (m) => console.log(m),
+    });
+    setOcrText(result.data.text);
+  } catch (error) {
+    console.error(error);
+    setOcrText("Failed to extract text");
+  }
+};
+
 
   const confirmPrescription = async (orderId) => {
     const items = prompt("Enter JSON array of items: [{ medicineId, quantity, price }]");
@@ -72,12 +78,14 @@ export default function PrescriptionOrders() {
           {orders.map((order) => (
             <div key={order._id} className="border p-4 rounded shadow bg-white">
               <h3 className="font-semibold text-gray-800 mb-2">{order.user.name}</h3>
-              <img
-                src={order.prescriptionImage}
-                alt="prescription"
-                className="w-full h-48 object-cover rounded cursor-pointer"
-                onClick={() => handleImageClick(order.prescriptionImage)}
-              />
+             <img
+  src={`${import.meta.env.VITE_API_BASE}${order.prescriptionImage}`}
+  alt="Prescription"
+  className="h-32 object-contain cursor-pointer"
+  onClick={() => handleImageClick(order.prescriptionImage)}  // ✅ fix here
+/>
+
+
               <p className="text-sm text-gray-600 mt-2">
                 Uploaded on: {new Date(order.createdAt).toLocaleDateString()}
               </p>

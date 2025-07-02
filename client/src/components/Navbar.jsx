@@ -1,15 +1,37 @@
 import React from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../features/auth/authSlice';
+import axios from 'axios';
 
 export default function Navbar() {
   const { userInfo } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.cart);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
+const [prescriptionCount, setPrescriptionCount] = useState(0);
   const totalQuantity = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+
+
+useEffect(() => {
+  const fetchPendingPrescriptions = async () => {
+    if (userInfo?.role === 'admin') {
+      try {
+        const res = await axios.get('/api/orders/prescriptions', {
+          headers: {
+            Authorization: `Bearer ${userInfo.token}`,
+          },
+        });
+        setPrescriptionCount(res.data.length); // count of pending prescriptions
+      } catch (err) {
+        console.error("Failed to fetch prescription count");
+      }
+    }
+  };
+
+  fetchPendingPrescriptions();
+}, [userInfo]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -61,9 +83,16 @@ export default function Navbar() {
               <Link to="/admin-dashboard" className="hover:underline text-gray-700">Dashboard</Link>
             </li>
             <li>
-              <Link to="/admin/prescriptions" className="hover:underline text-blue-700">
-                📝 View Prescriptions
-              </Link>
+             <Link to="/admin/prescriptions" className="relative text-blue-700">
+  📝 View Prescriptions
+  {prescriptionCount > 0 && (
+    <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
+      {prescriptionCount}
+    </span>
+  )}
+</Link>
+
+
             </li>
           </>
         )}

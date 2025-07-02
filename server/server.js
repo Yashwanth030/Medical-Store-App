@@ -20,6 +20,11 @@ connectDB();
 // Initialize app
 const app = express();
 
+const fs = require('fs');
+if (!fs.existsSync("uploads")) {
+  fs.mkdirSync("uploads");
+}
+
 // Middleware
 app.use(cors());
 app.use(express.json());

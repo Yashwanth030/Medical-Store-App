@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { removeFromCart } from '../features/cart/cartSlice';
+import { removeFromCart, clearCart } from '../features/cart/cartSlice';
 
 export default function CartPage() {
   const dispatch = useDispatch();
@@ -11,6 +11,7 @@ export default function CartPage() {
   const { userInfo } = useSelector((state) => state.auth);
 
   const [paymentMethod, setPaymentMethod] = useState('COD');
+  const [address, setAddress] = useState('');
 
   const handleRemove = (id) => {
     dispatch(removeFromCart(id));
@@ -24,6 +25,10 @@ export default function CartPage() {
       alert('Cart is empty.');
       return;
     }
+    if (!address.trim()) {
+      alert('Please enter your delivery address.');
+      return;
+    }
 
     try {
       const orderData = {
@@ -34,6 +39,7 @@ export default function CartPage() {
         })),
         totalPrice: totalAmount,
         paymentMethod,
+        shippingAddress: address,
       };
 
       await axios.post('/api/orders', orderData, {
@@ -43,11 +49,11 @@ export default function CartPage() {
       });
 
       alert('Order placed successfully!');
-      // Optional: dispatch(clearCart()); // if you have a clearCart action
-      navigate('/orders'); // create MyOrders page next
+      dispatch(clearCart());
+      navigate('/orders');
     } catch (err) {
-      console.error(err);
-      alert('Failed to place order.');
+      console.error(err.response?.data || err.message);
+      alert('Failed to place order. Please try again.');
     }
   };
 
@@ -68,7 +74,7 @@ export default function CartPage() {
                 <div className="flex items-center gap-4">
                   {item.image ? (
                     <img
-                      src={item.image}
+                      src={`${import.meta.env.VITE_API_BASE}${item.image}`}
                       alt={item.name}
                       className="h-16 w-16 object-cover rounded"
                     />
@@ -94,6 +100,19 @@ export default function CartPage() {
             ))}
           </div>
 
+          {/* 🔹 Delivery Address */}
+          <div className="mt-4">
+            <label className="block mb-1 font-semibold">Delivery Address</label>
+            <textarea
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              rows={3}
+              className="w-full border border-gray-300 rounded p-2"
+              placeholder="Enter your full delivery address"
+              required
+            />
+          </div>
+
           {/* 🔹 Payment Selection */}
           <div className="mt-6">
             <label className="font-semibold">Select Payment Method:</label>
@@ -114,11 +133,12 @@ export default function CartPage() {
                   checked={paymentMethod === 'UPI'}
                   onChange={(e) => setPaymentMethod(e.target.value)}
                 />
-                <span className="ml-2">UPI/PhonePe</span>
+                <span className="ml-2">UPI / PhonePe</span>
               </label>
             </div>
           </div>
 
+          {/* 🔹 Summary */}
           <div className="mt-6 text-right">
             <p className="text-lg font-semibold text-gray-800">
               Total Items: <span className="text-blue-700">{totalQuantity}</span>

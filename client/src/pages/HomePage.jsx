@@ -37,7 +37,7 @@ export default function HomePage() {
           >
             {med.image ? (
               <img
-                src={med.image}
+                src={`${import.meta.env.VITE_API_BASE}${med.image}`}
                 alt={med.name}
                 className="h-32 w-full object-cover rounded-md mb-3"
               />
@@ -46,15 +46,33 @@ export default function HomePage() {
                 No Image
               </div>
             )}
+
             <h3 className="text-lg font-semibold text-gray-800">{med.name}</h3>
             <p className="text-sm text-gray-500">{med.description}</p>
             <p className="font-bold text-green-600 mt-2">₹{med.price}</p>
-            <button
-              className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white py-1 rounded"
-              onClick={() => handleAddToCart(med)}
-            >
-              Add to Cart
-            </button>
+
+            {/* ✅ Show stock status */}
+            <p className={`text-sm mt-1 font-semibold ${med.countInStock === 0 ? 'text-red-600' : 'text-green-600'}`}>
+              {med.countInStock === 0 ? 'Out of Stock' : `In Stock: ${med.countInStock}`}
+            </p>
+
+            {/* ✅ Conditional Button */}
+            {med.countInStock === 0 ? (
+  <button
+    disabled
+    className="mt-3 w-full bg-red-500 text-white py-1 rounded cursor-not-allowed"
+  >
+    Out of Stock
+  </button>
+) : (
+  <button
+    className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white py-1 rounded"
+    onClick={() => handleAddToCart(med)}
+  >
+    Add to Cart
+  </button>
+)}
+
           </div>
         ))}
       </div>

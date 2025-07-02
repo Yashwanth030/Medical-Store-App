@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const path = require("path");
-const multer = require("multer");
-
+// const multer = require("multer");
+const upload = require('../middleware/uploadMiddleware');
 const { protect, adminOnly } = require("../middleware/authMiddleware");
 const {
   createMedicine,
@@ -13,16 +13,16 @@ const {
 } = require("../controllers/medicineController");
 
 // ✅ Multer storage configuration
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, "uploads/"); // Make sure this folder exists
-  },
-  filename(req, file, cb) {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
+// const storage = multer.diskStorage({
+//   destination(req, file, cb) {
+//     cb(null, "uploads/"); // Make sure this folder exists
+//   },
+//   filename(req, file, cb) {
+//     cb(null, `${Date.now()}-${file.originalname}`);
+//   },
+// });
 
-const upload = multer({ storage });
+// const upload = multer({ storage });
 
 // ✅ Upload route (Admin only)
 router.post(
@@ -64,10 +64,11 @@ router.post(
 
 // ✅ Other CRUD routes
 router.get("/", getMedicines);
-router.post("/", protect, adminOnly, upload.single("image"), createMedicine);
+router.post('/', protect, adminOnly, upload.single('image'), createMedicine);
  
 router.get("/:id", getMedicineById);
-router.put("/:id", protect, adminOnly, updateMedicine);
+router.put("/:id", protect, adminOnly, upload.single('image'), updateMedicine);
+
 router.delete("/:id", protect, adminOnly, deleteMedicine);
 
 module.exports = router;

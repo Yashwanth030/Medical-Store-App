@@ -15,7 +15,7 @@ import CartPage from "./pages/CartPage";
 import UploadPrescription from "./pages/UploadPrescription";
 import PrescriptionOrders from './pages/Admin/PrescriptionOrders';
 import Orders from "./pages/Orders";
-
+import AdminOrders from "./pages/Admin/AdminOrders";
 
 
 function App() {
@@ -127,6 +127,14 @@ function App() {
 
           {/* ✅ Fallback: redirect unknown routes */}
           <Route path="*" element={<Navigate to="/" />} />
+          <Route
+  path="/admin/orders"
+  element={
+    <PrivateRoute allowedRoles={["admin"]}>
+      <AdminOrders />
+    </PrivateRoute>
+  }
+/>
         </Routes>
       </main>
 

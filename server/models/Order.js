@@ -31,6 +31,11 @@ status: {
       enum: ["QR", "COD", "Prescription"],
       default: "COD",
     },
+    shippingAddress: {
+  type: String,
+  required: true,
+},
+
     totalPrice: {
       type: Number,
       required: true,
@@ -47,10 +52,12 @@ status: {
       enum: ["Prescription Uploaded", "Pending", "Confirmed", "Delivered"],
       default: "Pending",
     },
+    
   },
   {
     timestamps: true,
   }
+  
 );
 
 module.exports = mongoose.model("Order", orderSchema);

@@ -3,6 +3,8 @@ import axios from 'axios';
 
 export default function AdminDashboard() {
   const [medicines, setMedicines] = useState([]);
+  const [editingMedicine, setEditingMedicine] = useState(null);
+
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -40,6 +42,16 @@ export default function AdminDashboard() {
       }
     }
   };
+const handleEdit = (med) => {
+  setEditingMedicine(med._id); // mark which one is being edited
+  setForm({
+    name: med.name,
+    description: med.description,
+    price: med.price,
+    countInStock: med.countInStock,
+    image: null, // leave image null unless new one uploaded
+  });
+};
 
   const handleChange = (e) => {
     if (e.target.name === 'image') {
@@ -49,42 +61,57 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    try {
-      const formData = new FormData();
-      formData.append('name', form.name);
-      formData.append('description', form.description);
-      formData.append('price', form.price);
-      formData.append('countInStock', form.countInStock);
-      if (form.image) {
-        formData.append('image', form.image);
-      }
-
-      const token = localStorage.getItem('token');
-
-      await axios.post('/api/medicines', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setForm({
-        name: '',
-        description: '',
-        price: '',
-        countInStock: '',
-        image: null,
-      });
-
-      fetchMedicines();
-    } catch (error) {
-      console.error('Add medicine failed:', error.response?.data || error.message);
-      alert('Failed to add medicine. Check console for details.');
+  try {
+    const formData = new FormData();
+    formData.append('name', form.name);
+    formData.append('description', form.description);
+    formData.append('price', form.price);
+    formData.append('countInStock', form.countInStock);
+    if (form.image) {
+      formData.append('image', form.image);
     }
-  };
+
+    const token = localStorage.getItem('token');
+
+    // 🔽 Correct axios POST request with headers here:
+    if (editingMedicine) {
+  // Update existing
+  await axios.put(`/api/medicines/${editingMedicine}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+} else {
+  // Create new
+  await axios.post('/api/medicines', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+
+    setForm({
+      name: '',
+      description: '',
+      price: '',
+      countInStock: '',
+      image: null,
+    });
+
+    fetchMedicines();
+  } catch (error) {
+    console.error('Failed to submit form:', error);
+    alert('Failed to submit medicine form.');
+  }
+};
+
+
 
   return (
     <div className="p-6">
@@ -141,7 +168,7 @@ export default function AdminDashboard() {
           type="submit"
           className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded col-span-full"
         >
-          Add Medicine
+         {editingMedicine ? 'Update Medicine' : 'Add Medicine'}
         </button>
       </form>
 
@@ -154,6 +181,8 @@ export default function AdminDashboard() {
               <th className="p-3 text-left">Name</th>
               <th className="p-3 text-left">Price (₹)</th>
               <th className="p-3 text-left">Actions</th>
+              <th className="p-3 text-left">Stock</th>
+
             </tr>
           </thead>
           <tbody>
@@ -161,17 +190,27 @@ export default function AdminDashboard() {
               <tr key={med._id} className="border-t hover:bg-gray-50">
                 <td className="p-3">
                   {med.image ? (
-                    <img
-                      src={med.image}
-                      alt={med.name}
-                      className="h-16 w-16 object-cover rounded"
-                    />
+                   <img
+  src={`${import.meta.env.VITE_API_BASE}${med.image}`}
+  alt={med.name}
+  className="h-16 w-16 object-cover rounded"
+/>
+
+
                   ) : (
                     <span className="text-gray-400 italic">No Image</span>
                   )}
                 </td>
                 <td className="p-3">{med.name}</td>
-                <td className="p-3 font-semibold text-green-700">₹{med.price}</td>
+<td className="p-3 font-semibold text-green-700">₹{med.price}</td>
+<td className="p-3">
+  {med.countInStock <= 5 ? (
+    <span className="text-red-600 font-bold">{med.countInStock} (Low)</span>
+  ) : (
+    med.countInStock
+  )}
+</td>
+
                 <td className="p-3">
                   <button
                     onClick={() => handleDelete(med._id)}
@@ -179,6 +218,13 @@ export default function AdminDashboard() {
                   >
                     Delete
                   </button>
+                  <button
+  onClick={() => handleEdit(med)}
+  className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded mr-2"
+>
+  Edit
+</button>
+
                 </td>
               </tr>
             ))}
@@ -191,6 +237,22 @@ export default function AdminDashboard() {
             )}
           </tbody>
         </table>
+        {/* Low Stock Warning Section */}
+{medicines.some((m) => m.countInStock <= 5) && (
+  <div className="mt-10 bg-red-50 border border-red-300 p-4 rounded">
+    <h3 className="text-lg font-bold text-red-600 mb-2">⚠️ Low Stock Alert</h3>
+    <ul className="list-disc list-inside text-red-700">
+      {medicines
+        .filter((m) => m.countInStock <= 5)
+        .map((m) => (
+          <li key={m._id}>
+            {m.name} - Only {m.countInStock} left
+          </li>
+        ))}
+    </ul>
+  </div>
+)}
+
       </div>
     </div>
   );

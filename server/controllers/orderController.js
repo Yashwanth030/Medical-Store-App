@@ -1,12 +1,10 @@
 const Order = require("../models/Order");
 const Medicine = require("../models/Medicine");
 
-// @desc    Create order (with or without prescription)
-// @route   POST /api/orders
-// @access  Private
+// ✅ Create Order (with or without prescription)
 const createOrder = async (req, res) => {
   try {
-    const { orderItems, totalPrice, paymentMethod, prescriptionImage } = req.body;
+    const { orderItems, totalPrice, paymentMethod, prescriptionImage, shippingAddress } = req.body;
 
     if (!paymentMethod) {
       return res.status(400).json({ message: "Payment method required" });
@@ -16,14 +14,33 @@ const createOrder = async (req, res) => {
       return res.status(400).json({ message: "Order must have items or prescription" });
     }
 
-    const order = new Order({
-      user: req.user._id,
-      orderItems: orderItems || [],
-      totalPrice: totalPrice || 0,
-      paymentMethod,
-      prescriptionImage,
-      status: prescriptionImage ? "Prescription Uploaded" : "Pending",
-    });
+    // ✅ If it's a cart-based order, reduce stock immediately
+    if (!prescriptionImage && orderItems?.length > 0) {
+      for (const item of orderItems) {
+        const med = await Medicine.findById(item.medicine);
+        if (!med) {
+          return res.status(404).json({ message: "Medicine not found" });
+        }
+        if (med.countInStock < item.qty) {
+          return res.status(400).json({
+            message: `${med.name} has only ${med.countInStock} left in stock`,
+          });
+        }
+        med.countInStock -= item.qty;
+        await med.save();
+      }
+    }
+
+   const order = new Order({
+  user: req.user._id,
+  orderItems: orderItems || [],
+  totalPrice: totalPrice || 0,
+  paymentMethod,
+  prescriptionImage,
+  shippingAddress, // ✅ Now added here
+  status: prescriptionImage ? "Prescription Uploaded" : "Pending",
+});
+
 
     const saved = await order.save();
     res.status(201).json(saved);
@@ -33,43 +50,30 @@ const createOrder = async (req, res) => {
   }
 };
 
-
-// @desc    Admin confirms direct order and reduces stock
-// @route   PUT /api/orders/:id/confirm
-// @access  Admin
+// ✅ Confirm Cart Order (admin)
 const confirmOrder = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id).populate("orderItems.medicine");
 
     if (!order) return res.status(404).json({ message: "Order not found" });
-
     if (order.status === "Confirmed") {
       return res.status(400).json({ message: "Order already confirmed" });
     }
 
-    for (const item of order.orderItems) {
-      const med = await Medicine.findById(item.medicine._id);
-      if (med.countInStock < item.qty) {
-        return res.status(400).json({ message: `${med.name} is out of stock` });
-      }
-      med.countInStock -= item.qty;
-      await med.save();
-    }
+    // 🟡 No stock reduction here (already done during creation)
 
     order.status = "Confirmed";
     order.isPaid = true;
     order.paidAt = Date.now();
     await order.save();
 
-    res.json({ message: "Order confirmed & stock updated", order });
+    res.json({ message: "Order confirmed", order });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// @desc    Admin confirms prescription order and reduces stock
-// @route   PUT /api/orders/confirm/:id
-// @access  Admin
+// ✅ Confirm Prescription Order (Admin adds items manually)
 const confirmPrescriptionOrder = async (req, res) => {
   try {
     const { items } = req.body; // [{ medicineId, quantity, price }]
@@ -77,17 +81,10 @@ const confirmPrescriptionOrder = async (req, res) => {
 
     if (!order) return res.status(404).json({ message: "Order not found" });
 
-    // Set order items & total
-    order.orderItems = items;
-    order.totalPrice = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    order.status = "Confirmed";
-    order.isPaid = true;
-    order.paidAt = Date.now();
-    await order.save();
-
-    // Reduce stock
+    // 🟢 Reduce stock
     for (let item of items) {
       const med = await Medicine.findById(item.medicineId);
+      if (!med) return res.status(404).json({ message: "Medicine not found" });
       if (med.countInStock < item.quantity) {
         return res.status(400).json({ message: `${med.name} is out of stock` });
       }
@@ -95,15 +92,26 @@ const confirmPrescriptionOrder = async (req, res) => {
       await med.save();
     }
 
+    // 📝 Format and set order items properly
+    order.orderItems = items.map(item => ({
+      medicine: item.medicineId,
+      qty: item.quantity,
+      price: item.price,
+    }));
+    order.totalPrice = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    order.status = "Confirmed";
+    order.isPaid = true;
+    order.paidAt = Date.now();
+
+    await order.save();
     res.json({ message: "Prescription order confirmed and stock updated" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// @desc    Get orders for logged-in user
-// @route   GET /api/orders/myorders
-// @access  Private
+
+// ✅ Customer: Get Their Orders
 const getMyOrders = async (req, res) => {
   try {
     const orders = await Order.find({ user: req.user._id });
@@ -113,13 +121,10 @@ const getMyOrders = async (req, res) => {
   }
 };
 
-// @desc    Admin: Get all orders (with optional date filter)
-// @route   GET /api/orders
-// @access  Admin
+// ✅ Admin: All Orders (with optional date filter)
 const getAllOrders = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
-
     let filter = {};
     if (startDate && endDate) {
       filter.createdAt = {
@@ -127,7 +132,6 @@ const getAllOrders = async (req, res) => {
         $lte: new Date(endDate),
       };
     }
-
     const orders = await Order.find(filter).populate("user", "name email");
     res.json(orders);
   } catch (err) {
@@ -135,9 +139,7 @@ const getAllOrders = async (req, res) => {
   }
 };
 
-// @desc    Admin: Get all prescription-uploaded orders
-// @route   GET /api/orders/prescriptions
-// @access  Admin
+// ✅ Admin: Get All Uploaded Prescriptions
 const getPendingPrescriptions = async (req, res) => {
   try {
     const orders = await Order.find({
@@ -158,4 +160,5 @@ module.exports = {
   getMyOrders,
   getAllOrders,
   getPendingPrescriptions,
+  
 };
