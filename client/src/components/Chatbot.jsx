@@ -1,42 +1,67 @@
 import React, { useState } from "react";
+import axios from "axios";
 
-function Chatbot() {
-  const [messages, setMessages] = useState([]);
+export default function ChatBot() {
+  const [messages, setMessages] = useState([
+    { text: "Hi! I'm MediBot. How can I help you?", from: "bot" },
+  ]);
   const [input, setInput] = useState("");
 
   const sendMessage = async () => {
     if (!input.trim()) return;
-    setMessages([...messages, { user: input }]);
+
+    const userMessage = { text: input, from: "user" };
+    setMessages((prev) => [...prev, userMessage]);
+
     try {
-      const res = await fetch("/api/chatbot", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input }),
-      });
-      const data = await res.json();
-      setMessages((prev) => [...prev, { bot: data.reply }]);
-      setInput("");
+      const res = await axios.post("/api/chatbot", { message: input });
+      const botMessage = { text: res.data.reply, from: "bot" };
+      setMessages((prev) => [...prev, botMessage]);
     } catch (err) {
-      setMessages((prev) => [...prev, { bot: "Bot error. Please try again." }]);
+      setMessages((prev) => [
+        ...prev,
+        { text: "Oops! Something went wrong.", from: "bot" },
+      ]);
     }
+
+    setInput("");
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") sendMessage();
   };
 
   return (
-    <div style={{ padding: "1rem", maxWidth: 600, margin: "auto" }}>
-      <h2>Chatbot</h2>
-      <div style={{ height: 300, overflowY: "auto", border: "1px solid #ccc", padding: "1rem" }}>
-        {messages.map((msg, i) => (
-          <p key={i}><strong>{msg.user ? "You" : "Bot"}:</strong> {msg.user || msg.bot}</p>
+    <div className="flex flex-col h-full bg-white shadow rounded">
+      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+        {messages.map((msg, idx) => (
+          <div
+            key={idx}
+            className={`p-2 rounded max-w-xs ${
+              msg.from === "bot"
+                ? "bg-gray-200 text-black self-start"
+                : "bg-blue-500 text-white self-end"
+            }`}
+          >
+            {msg.text}
+          </div>
         ))}
       </div>
-      <input
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="Ask something..."
-      />
-      <button onClick={sendMessage}>Send</button>
+      <div className="p-2 border-t flex items-center gap-2">
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyPress={handleKeyPress}
+          placeholder="Ask a question..."
+          className="flex-1 p-2 border rounded"
+        />
+        <button
+          onClick={sendMessage}
+          className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+        >
+          Send
+        </button>
+      </div>
     </div>
   );
 }
-
-export default Chatbot;

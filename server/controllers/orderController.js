@@ -1,67 +1,80 @@
 const Order = require("../models/Order");
 const Medicine = require("../models/Medicine");
 
-// ✅ Create Order (with or without prescription)
+// ✅ Create Order (Cart or Prescription)
 const createOrder = async (req, res) => {
   try {
-    const { orderItems, totalPrice, paymentMethod, prescriptionImage, shippingAddress } = req.body;
+    const {
+      orderItems,
+      totalPrice,
+      paymentMethod,
+      prescriptionImage,
+      shippingAddress,
+    } = req.body;
 
     if (!paymentMethod) {
       return res.status(400).json({ message: "Payment method required" });
     }
 
     if (!orderItems?.length && !prescriptionImage) {
-      return res.status(400).json({ message: "Order must have items or prescription" });
+      return res
+        .status(400)
+        .json({ message: "Order must have items or prescription" });
     }
 
-    // ✅ If it's a cart-based order, reduce stock immediately
+    // ✅ Check stock only for cart-based orders (no prescription)
     if (!prescriptionImage && orderItems?.length > 0) {
       for (const item of orderItems) {
         const med = await Medicine.findById(item.medicine);
-        if (!med) {
-          return res.status(404).json({ message: "Medicine not found" });
-        }
+        if (!med) return res.status(404).json({ message: "Medicine not found" });
+
         if (med.countInStock < item.qty) {
           return res.status(400).json({
-            message: `${med.name} has only ${med.countInStock} left in stock`,
+            message: `${med.name} is out of stock`,
           });
         }
+      }
+
+      for (const item of orderItems) {
+        const med = await Medicine.findById(item.medicine);
         med.countInStock -= item.qty;
         await med.save();
       }
     }
 
-   const order = new Order({
-  user: req.user._id,
-  orderItems: orderItems || [],
-  totalPrice: totalPrice || 0,
-  paymentMethod,
-  prescriptionImage,
-  shippingAddress, // ✅ Now added here
-  status: prescriptionImage ? "Prescription Uploaded" : "Pending",
-});
-
+    const order = new Order({
+      user: req.user._id,
+      orderItems: orderItems || [],
+      totalPrice: totalPrice || 0,
+      paymentMethod,
+      prescriptionImage,
+      shippingAddress,
+      status: prescriptionImage ? "Prescription Uploaded" : "Pending",
+    });
 
     const saved = await order.save();
     res.status(201).json(saved);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Order creation failed", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Order creation failed", error: err.message });
   }
 };
 
-// ✅ Confirm Cart Order (admin)
+// ✅ Confirm Cart Order (Admin)
 const confirmOrder = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id).populate("orderItems.medicine");
+    const order = await Order.findById(req.params.id).populate(
+      "orderItems.medicine"
+    );
 
     if (!order) return res.status(404).json({ message: "Order not found" });
     if (order.status === "Confirmed") {
       return res.status(400).json({ message: "Order already confirmed" });
     }
 
-    // 🟡 No stock reduction here (already done during creation)
-
+    // Stock already reduced at creation time
     order.status = "Confirmed";
     order.isPaid = true;
     order.paidAt = Date.now();
@@ -76,7 +89,7 @@ const confirmOrder = async (req, res) => {
 // ✅ Confirm Prescription Order (Admin adds items manually)
 const confirmPrescriptionOrder = async (req, res) => {
   try {
-    const { items } = req.body; // [{ medicineId, quantity, price }]
+    const { items } = req.body; // [{ medicineId, quantity, price, name (optional) }]
     const order = await Order.findById(req.params.id);
 
     if (!order) return res.status(404).json({ message: "Order not found" });
@@ -93,35 +106,38 @@ const confirmPrescriptionOrder = async (req, res) => {
     }
 
     // 📝 Format and set order items properly
-    order.orderItems = items.map(item => ({
+    order.orderItems = items.map((item) => ({
       medicine: item.medicineId,
       qty: item.quantity,
       price: item.price,
+      name: item.name || "", // Optional: used for display
     }));
+
     order.totalPrice = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
     order.status = "Confirmed";
     order.isPaid = true;
     order.paidAt = Date.now();
 
     await order.save();
-    res.json({ message: "Prescription order confirmed and stock updated" });
+    res.json({ message: "Prescription order confirmed and stock updated", order });
   } catch (err) {
+    console.error("❌ Error confirming prescription:", err.message);
     res.status(500).json({ message: err.message });
   }
 };
 
 
-// ✅ Customer: Get Their Orders
+// ✅ Get Logged-in User Orders
 const getMyOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user._id });
+    const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
     res.json(orders);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// ✅ Admin: All Orders (with optional date filter)
+// ✅ Admin: Get All Orders (Optional Date Filter)
 const getAllOrders = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
@@ -132,24 +148,30 @@ const getAllOrders = async (req, res) => {
         $lte: new Date(endDate),
       };
     }
-    const orders = await Order.find(filter).populate("user", "name email");
+    const orders = await Order.find(filter)
+      .populate("user", "name email")
+      .sort({ createdAt: -1 });
     res.json(orders);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// ✅ Admin: Get All Uploaded Prescriptions
+// ✅ Admin: Get Pending Prescriptions
 const getPendingPrescriptions = async (req, res) => {
   try {
     const orders = await Order.find({
       prescriptionImage: { $ne: null },
       status: "Prescription Uploaded",
-    }).populate("user", "name email");
+    })
+      .populate("user", "name email")
+      .sort({ createdAt: -1 });
 
     res.json(orders);
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch prescription orders" });
+    res
+      .status(500)
+      .json({ message: "Failed to fetch prescription orders" });
   }
 };
 
@@ -160,5 +182,4 @@ module.exports = {
   getMyOrders,
   getAllOrders,
   getPendingPrescriptions,
-  
 };

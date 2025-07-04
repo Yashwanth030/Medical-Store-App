@@ -31,11 +31,14 @@ export default function CartPage() {
     }
 
     try {
+      console.log('📦 Order Payload:', cartItems);
+
       const orderData = {
         orderItems: cartItems.map((item) => ({
           medicine: item._id,
           qty: item.quantity,
           price: item.price,
+          name: item.name, // ✅ Important fix
         })),
         totalPrice: totalAmount,
         paymentMethod,
@@ -48,12 +51,12 @@ export default function CartPage() {
         },
       });
 
-      alert('Order placed successfully!');
+      alert('✅ Order placed successfully!');
       dispatch(clearCart());
       navigate('/orders');
     } catch (err) {
-      console.error(err.response?.data || err.message);
-      alert('Failed to place order. Please try again.');
+      console.error(err);
+      alert('❌ Failed to place order. Please try again.');
     }
   };
 
@@ -100,7 +103,7 @@ export default function CartPage() {
             ))}
           </div>
 
-          {/* 🔹 Delivery Address */}
+          {/* Address Input */}
           <div className="mt-4">
             <label className="block mb-1 font-semibold">Delivery Address</label>
             <textarea
@@ -113,7 +116,7 @@ export default function CartPage() {
             />
           </div>
 
-          {/* 🔹 Payment Selection */}
+          {/* Payment Method */}
           <div className="mt-6">
             <label className="font-semibold">Select Payment Method:</label>
             <div className="flex gap-6 mt-2">
@@ -138,7 +141,7 @@ export default function CartPage() {
             </div>
           </div>
 
-          {/* 🔹 Summary */}
+          {/* Summary */}
           <div className="mt-6 text-right">
             <p className="text-lg font-semibold text-gray-800">
               Total Items: <span className="text-blue-700">{totalQuantity}</span>

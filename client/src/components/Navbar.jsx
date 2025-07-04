@@ -1,5 +1,4 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../features/auth/authSlice';
@@ -10,28 +9,28 @@ export default function Navbar() {
   const { cartItems } = useSelector((state) => state.cart);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-const [prescriptionCount, setPrescriptionCount] = useState(0);
+  const [prescriptionCount, setPrescriptionCount] = useState(0);
+
   const totalQuantity = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
-
-useEffect(() => {
-  const fetchPendingPrescriptions = async () => {
-    if (userInfo?.role === 'admin') {
-      try {
-        const res = await axios.get('/api/orders/prescriptions', {
-          headers: {
-            Authorization: `Bearer ${userInfo.token}`,
-          },
-        });
-        setPrescriptionCount(res.data.length); // count of pending prescriptions
-      } catch (err) {
-        console.error("Failed to fetch prescription count");
+  useEffect(() => {
+    const fetchPendingPrescriptions = async () => {
+      if (userInfo?.role === 'admin') {
+        try {
+          const res = await axios.get('/api/orders/prescriptions', {
+            headers: {
+              Authorization: `Bearer ${userInfo.token}`,
+            },
+          });
+          setPrescriptionCount(res.data.length);
+        } catch (err) {
+          console.error('Failed to fetch prescription count');
+        }
       }
-    }
-  };
+    };
 
-  fetchPendingPrescriptions();
-}, [userInfo]);
+    fetchPendingPrescriptions();
+  }, [userInfo]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -58,42 +57,54 @@ useEffect(() => {
               </Link>
             </li>
             <li>
-              <Link
-                to="/upload-prescription"
-                className="hover:underline text-blue-600 font-medium"
-              >
+              <Link to="/upload-prescription" className="hover:underline text-blue-600 font-medium">
                 📤 Upload Prescription
               </Link>
             </li>
             <li>
-  <Link
-    to="/orders"
-    className="hover:underline text-blue-600 font-medium"
-  >
-    📜 My Orders
-  </Link>
-</li>
-
+              <Link to="/orders" className="hover:underline text-blue-600 font-medium">
+                📜 My Orders
+              </Link>
+            </li>
+            <li>
+              <Link to="/track-orders" className="hover:underline text-blue-600 font-medium">
+                🚚 Track Order
+              </Link>
+            </li>
+            <li>
+              <Link to="/chatbot" className="hover:underline text-blue-600 font-medium">
+                🤖 Chatbot
+              </Link>
+            </li>
           </>
         )}
 
         {userInfo && userInfo.role === 'admin' && (
           <>
             <li>
-              <Link to="/admin-dashboard" className="hover:underline text-gray-700">Dashboard</Link>
+              <Link to="/admin-dashboard" className="hover:underline text-gray-700">
+                📊 Dashboard
+              </Link>
             </li>
             <li>
-             <Link to="/admin/prescriptions" className="relative text-blue-700">
-  📝 View Prescriptions
-  {prescriptionCount > 0 && (
-    <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
-      {prescriptionCount}
-    </span>
-  )}
-</Link>
-
-
+              <Link to="/admin/orders" className="hover:underline text-gray-700">
+                📦 Manage Orders
+              </Link>
             </li>
+            <li className="relative">
+              <Link to="/admin/prescriptions" className="text-blue-700">
+                📝 View Prescriptions
+                {prescriptionCount > 0 && (
+                  <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
+                    {prescriptionCount}
+                  </span>
+                )}
+              </Link>
+            </li>
+            {/* Optional future admin notifications page:
+            <li>
+              <Link to="/admin/notifications" className="text-gray-600 hover:underline">🔔 Notifications</Link>
+            </li> */}
           </>
         )}
 
