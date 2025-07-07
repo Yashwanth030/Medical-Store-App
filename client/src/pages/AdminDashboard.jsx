@@ -15,7 +15,7 @@ export default function AdminDashboard() {
 
   const fetchMedicines = async () => {
     try {
-      const res = await axios.get('/api/medicines');
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE}/api/medicines`);
       setMedicines(res.data);
     } catch (err) {
       console.error('Error fetching medicines:', err.message);
@@ -30,7 +30,7 @@ export default function AdminDashboard() {
     if (window.confirm('Are you sure you want to delete this medicine?')) {
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`/api/medicines/${id}`, {
+        await axios.delete(`${import.meta.env.VITE_API_BASE}/api/medicines/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -79,7 +79,7 @@ const handleSubmit = async (e) => {
     // 🔽 Correct axios POST request with headers here:
     if (editingMedicine) {
   // Update existing
-  await axios.put(`/api/medicines/${editingMedicine}`, formData, {
+  await axios.put(`${import.meta.env.VITE_API_BASE}/api/medicines/${editingMedicine}`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
       Authorization: `Bearer ${token}`,
@@ -87,7 +87,7 @@ const handleSubmit = async (e) => {
   });
 } else {
   // Create new
-  await axios.post('/api/medicines', formData, {
+  await axios.post(`${import.meta.env.VITE_API_BASE}/api/medicines`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
       Authorization: `Bearer ${token}`,

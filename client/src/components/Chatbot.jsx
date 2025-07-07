@@ -14,7 +14,7 @@ export default function ChatBot() {
     setMessages((prev) => [...prev, userMessage]);
 
     try {
-      const res = await axios.post("/api/chatbot", { message: input });
+      const res = await axios.post(`${import.meta.env.VITE_API_BASE}/api/chatbot`, { message: input });
       const botMessage = { text: res.data.reply, from: "bot" };
       setMessages((prev) => [...prev, botMessage]);
     } catch (err) {

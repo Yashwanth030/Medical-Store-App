@@ -1,22 +1,26 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+
+// Utility function to get full backend URL
+const API_BASE = import.meta.env.VITE_API_BASE;
+
 // ✅ Login Thunk
 export const loginUser = createAsyncThunk('auth/loginUser', async (credentials, thunkAPI) => {
   try {
-    const res = await axios.post('/api/users/login', credentials);
+    const res = await axios.post(`${import.meta.env.VITE_API_BASE}/api/users/login`, credentials);
     return res.data;
   } catch (error) {
-    return thunkAPI.rejectWithValue(error.response.data.message);
+    return thunkAPI.rejectWithValue(error.response?.data?.message || 'Login failed');
   }
 });
 
 // ✅ Register Thunk
 export const registerUser = createAsyncThunk('auth/registerUser', async (userData, thunkAPI) => {
   try {
-    const res = await axios.post('/api/users/register', userData);
+    const res = await axios.post(`${import.meta.env.VITE_API_BASE}/api/users/register`, userData);
     return res.data;
   } catch (error) {
-    return thunkAPI.rejectWithValue(error.response.data.message);
+    return thunkAPI.rejectWithValue(error.response?.data?.message || 'Registration failed');
   }
 });
 
@@ -67,5 +71,4 @@ const authSlice = createSlice({
 });
 
 export const { logout } = authSlice.actions;
-
 export default authSlice.reducer;

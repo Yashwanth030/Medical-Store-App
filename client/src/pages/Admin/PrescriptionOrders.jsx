@@ -24,7 +24,7 @@ export default function PrescriptionOrders() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get("/api/orders/prescriptions", {
+      const { data } = await axios.get(`${import.meta.env.VITE_API_BASE}/api/orders/prescriptions`, {
         headers: { Authorization: `Bearer ${userInfo.token}` },
       });
       setOrders(data);
@@ -37,7 +37,7 @@ export default function PrescriptionOrders() {
 
   const fetchMedicines = async () => {
     try {
-      const { data } = await axios.get("/api/medicines");
+      const { data } = await axios.get(`${import.meta.env.VITE_API_BASE}/api/medicines`);
       setMedicines(data);
     } catch {
       alert("Failed to fetch medicines");
@@ -71,7 +71,7 @@ export default function PrescriptionOrders() {
         name: medicines.find((m) => m._id === i.medicineId)?.name || "",
       }));
 
-      await axios.put(`/api/orders/confirm/${selectedOrderId}`, { items: formatted }, {
+      await axios.put(`${import.meta.env.VITE_API_BASE}/api/orders/confirm/${selectedOrderId}`, { items: formatted }, {
         headers: { Authorization: `Bearer ${userInfo.token}` },
       });
 

@@ -8,7 +8,7 @@ export default function AdminOrders() {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get("/api/orders", {
+      const { data } = await axios.get(`${import.meta.env.VITE_API_BASE}/api/orders`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -28,7 +28,7 @@ export default function AdminOrders() {
   const handleDeliver = async (orderId) => {
     try {
       await axios.put(
-        `/api/orders/${orderId}/confirm`,
+        `${import.meta.env.VITE_API_BASE}/api/orders/${orderId}/confirm`,
         {},
         {
           headers: {

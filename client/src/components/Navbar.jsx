@@ -10,21 +10,23 @@ export default function Navbar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [prescriptionCount, setPrescriptionCount] = useState(0);
-
   const totalQuantity = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   useEffect(() => {
     const fetchPendingPrescriptions = async () => {
       if (userInfo?.role === 'admin') {
         try {
-          const res = await axios.get('/api/orders/prescriptions', {
-            headers: {
-              Authorization: `Bearer ${userInfo.token}`,
-            },
-          });
+          const res = await axios.get(
+            `${import.meta.env.VITE_API_BASE}/api/orders/prescriptions`,
+            {
+              headers: {
+                Authorization: `Bearer ${userInfo.token}`,
+              },
+            }
+          );
           setPrescriptionCount(res.data.length);
         } catch (err) {
-          console.error('Failed to fetch prescription count');
+          console.error('❌ Failed to fetch prescription count', err);
         }
       }
     };
@@ -71,11 +73,11 @@ export default function Navbar() {
                 🚚 Track Order
               </Link>
             </li>
-            <li>
+            {/* <li>
               <Link to="/chatbot" className="hover:underline text-blue-600 font-medium">
                 🤖 Chatbot
               </Link>
-            </li>
+            </li> */}
           </>
         )}
 
@@ -101,19 +103,13 @@ export default function Navbar() {
                 )}
               </Link>
             </li>
-            {/* Optional future admin notifications page:
-            <li>
-              <Link to="/admin/notifications" className="text-gray-600 hover:underline">🔔 Notifications</Link>
-            </li> */}
           </>
         )}
 
         {userInfo ? (
           <li>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-            >
+            <button onClick={handleLogout}
+              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">
               Logout
             </button>
           </li>
@@ -126,3 +122,4 @@ export default function Navbar() {
     </nav>
   );
 }
+

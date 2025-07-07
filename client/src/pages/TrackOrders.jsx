@@ -11,7 +11,7 @@ export default function TrackOrders() {
     const fetchOrders = async () => {
       setLoading(true);
       try {
-        const { data } = await axios.get("/api/orders/myorders", {
+        const { data } = await axios.get(`${import.meta.env.VITE_API_BASE}/api/orders/myorders`, {
           headers: {
             Authorization: `Bearer ${userInfo.token}`,
           },

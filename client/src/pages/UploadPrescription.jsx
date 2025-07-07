@@ -32,7 +32,7 @@ export default function UploadPrescription() {
       const formData = new FormData();
       formData.append("image", file);
 
-      const { data } = await axios.post("/api/upload/prescription", formData, {
+      const { data } = await axios.post(`${import.meta.env.VITE_API_BASE}/api/upload/prescription`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${userInfo.token}`,
@@ -43,7 +43,7 @@ export default function UploadPrescription() {
 
       // 2. Create order with prescription
       await axios.post(
-        "/api/orders",
+        `${import.meta.env.VITE_API_BASE}/api/orders`,
         {
           orderItems: [],
           totalPrice: 0,

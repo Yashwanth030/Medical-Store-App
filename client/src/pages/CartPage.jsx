@@ -21,31 +21,36 @@ export default function CartPage() {
   const totalAmount = cartItems.reduce((acc, item) => acc + item.quantity * item.price, 0);
 
   const handleCheckout = async () => {
+    if (!userInfo) {
+      alert("Please login before placing an order.");
+      navigate('/login');
+      return;
+    }
+
     if (cartItems.length === 0) {
       alert('Cart is empty.');
       return;
     }
+
     if (!address.trim()) {
       alert('Please enter your delivery address.');
       return;
     }
 
     try {
-      console.log('📦 Order Payload:', cartItems);
-
       const orderData = {
         orderItems: cartItems.map((item) => ({
           medicine: item._id,
           qty: item.quantity,
           price: item.price,
-          name: item.name, // ✅ Important fix
+          name: item.name, // ✅ Required for backend schema validation
         })),
         totalPrice: totalAmount,
         paymentMethod,
         shippingAddress: address,
       };
 
-      await axios.post('/api/orders', orderData, {
+      await axios.post(`${import.meta.env.VITE_API_BASE}/api/orders`, orderData, {
         headers: {
           Authorization: `Bearer ${userInfo.token}`,
         },
@@ -103,7 +108,6 @@ export default function CartPage() {
             ))}
           </div>
 
-          {/* Address Input */}
           <div className="mt-4">
             <label className="block mb-1 font-semibold">Delivery Address</label>
             <textarea
@@ -116,7 +120,6 @@ export default function CartPage() {
             />
           </div>
 
-          {/* Payment Method */}
           <div className="mt-6">
             <label className="font-semibold">Select Payment Method:</label>
             <div className="flex gap-6 mt-2">
@@ -141,7 +144,6 @@ export default function CartPage() {
             </div>
           </div>
 
-          {/* Summary */}
           <div className="mt-6 text-right">
             <p className="text-lg font-semibold text-gray-800">
               Total Items: <span className="text-blue-700">{totalQuantity}</span>

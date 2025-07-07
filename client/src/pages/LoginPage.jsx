@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '../features/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
 
-
 export default function LoginPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -14,24 +13,27 @@ export default function LoginPage() {
 
   const handleLogin = (e) => {
     e.preventDefault();
+
     dispatch(loginUser({ email, password }))
       .unwrap()
-     .then((res) => {
-  console.log("Login response:", res); // ✅ Check console
-  alert("Logged in as: " + res.role);
-  if (res.role === 'admin') {
-    navigate('/admin-dashboard');
-  } else {
-    navigate('/home');
-  }
+      .then((res) => {
+        console.log('✅ Login successful:', res);
+        alert('Logged in as: ' + res.role);
 
-        // ✅ Optional: save token locally
+        // Save token and user data
         localStorage.setItem('token', res.token);
         localStorage.setItem('user', JSON.stringify(res));
+
+        // Role-based navigation
+        if (res.role === 'admin') {
+          navigate('/admin-dashboard');
+        } else {
+          navigate('/home');
+        }
       })
       .catch((err) => {
-        console.error("Login failed:", err);
-        alert("Login failed: " + err);
+        console.error('Login failed:', err);
+        alert('Login failed: ' + err);
       });
   };
 
@@ -42,7 +44,9 @@ export default function LoginPage() {
           Medical Store Login
         </h2>
 
-        {error && <div className="mb-4 text-red-600 text-sm">{error}</div>}
+        {error && (
+          <div className="mb-4 text-red-600 text-sm text-center">{error}</div>
+        )}
 
         <form onSubmit={handleLogin} className="space-y-5">
           <div>

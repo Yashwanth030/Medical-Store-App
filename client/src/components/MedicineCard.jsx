@@ -1,5 +1,4 @@
 import React from "react";
-
 export default function MedicineCard({ med, handleAddToCart }) {
   return (
     <div className="border rounded-xl shadow-md p-4 bg-white hover:shadow-lg transition">

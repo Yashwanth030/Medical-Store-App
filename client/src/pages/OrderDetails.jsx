@@ -11,7 +11,7 @@ export default function OrderDetails() {
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const { data } = await axios.get(`/api/orders/myorders`, {
+        const { data } = await axios.get(`${import.meta.env.VITE_API_BASE}/api/orders/myorders`, {
           headers: {
             Authorization: `Bearer ${userInfo.token}`,
           },
@@ -34,9 +34,7 @@ export default function OrderDetails() {
     <div className="p-6 max-w-2xl mx-auto bg-white rounded shadow">
       <h2 className="text-2xl font-bold text-blue-700 mb-4">🧾 Order Summary</h2>
 
-      <p>
-        <strong>Order ID:</strong> {order._id}
-      </p>
+      <p><strong>Order ID:</strong> {order._id}</p>
       <p>
         <strong>Status:</strong>{" "}
         <span
@@ -51,19 +49,15 @@ export default function OrderDetails() {
           {order.status}
         </span>
       </p>
-      <p>
-        <strong>Payment Method:</strong> {order.paymentMethod}
-      </p>
-      <p>
-        <strong>Address:</strong> {order.shippingAddress || "N/A"}
-      </p>
+      <p><strong>Payment Method:</strong> {order.paymentMethod}</p>
+      <p><strong>Address:</strong> {order.shippingAddress || "N/A"}</p>
 
       <div className="mt-4">
         <h3 className="font-bold">Items:</h3>
         <ul className="list-disc list-inside">
           {order.orderItems.map((item, idx) => (
             <li key={idx}>
-              {item.name || item.medicine?.name || "Medicine"} × {item.qty} — ₹
+              {(item.name || item.medicine?.name || "Unknown Item")} × {item.qty || item.quantity} — ₹
               {item.price}
             </li>
           ))}
@@ -71,12 +65,12 @@ export default function OrderDetails() {
       </div>
 
       <p className="mt-4 font-bold text-green-700">
-        Total Price: ₹{order.totalPrice.toFixed(2)}
+        Total Price: ₹{order.totalPrice?.toFixed(2)}
       </p>
 
       {order.prescriptionImage && (
-        <div className="mt-4">
-          <h3 className="font-bold">Prescription:</h3>
+        <div className="mt-6">
+          <h3 className="font-bold mb-2">Prescription:</h3>
           <img
             src={`${import.meta.env.VITE_API_BASE}${order.prescriptionImage}`}
             alt="Prescription"
