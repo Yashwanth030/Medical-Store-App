@@ -80,8 +80,9 @@ const updateMedicine = async (req, res) => {
     medicine.requiresPrescription = req.body.requiresPrescription || medicine.requiresPrescription;
 
     // ✅ Update image if new image is uploaded
+
 if (req.file) {
-  medicine.image = req.file.path;
+  medicine.image = req.file.path; // cloudinary path
 }
     const updated = await medicine.save();
     res.json(updated);

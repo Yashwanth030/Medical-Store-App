@@ -82,7 +82,7 @@ export default function CartPage() {
                 <div className="flex items-center gap-4">
                   {item.image ? (
                     <img
-                      src={`${import.meta.env.VITE_API_BASE}${item.image}`}
+                      src={item.image}
                       alt={item.name}
                       className="h-16 w-16 object-cover rounded"
                     />

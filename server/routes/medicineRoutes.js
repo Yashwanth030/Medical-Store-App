@@ -1,6 +1,7 @@
+// server/routes/medicineRoutes.js
 const express = require("express");
 const router = express.Router();
-const upload = require('../middleware/uploadMiddleware');
+const upload = require("../middleware/uploadMiddleware");
 const { protect, adminOnly } = require("../middleware/authMiddleware");
 
 const {
@@ -11,7 +12,7 @@ const {
   deleteMedicine,
 } = require("../controllers/medicineController");
 
-// ✅ Route for adding new medicine (with Cloudinary image upload)
+// ✅ Upload New Medicine with Image (Cloudinary)
 router.post(
   "/upload",
   protect,
@@ -30,7 +31,6 @@ router.post(
       } = req.body;
 
       const Medicine = require("../models/Medicine");
-      const imagePath = req.file ? req.file.path : null;
 
       const medicine = new Medicine({
         name,
@@ -40,7 +40,7 @@ router.post(
         price,
         countInStock,
         requiresPrescription,
-        image: imagePath, // ✅ Save full Cloudinary URL
+        image: req.file?.path || null, // ✅ Cloudinary image URL
       });
 
       const saved = await medicine.save();
@@ -52,7 +52,7 @@ router.post(
   }
 );
 
-// ✅ Other CRUD routes
+// ✅ Other CRUD Routes
 router.get("/", getMedicines);
 router.post("/", protect, adminOnly, upload.single("image"), createMedicine);
 router.get("/:id", getMedicineById);

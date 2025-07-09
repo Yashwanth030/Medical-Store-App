@@ -191,7 +191,7 @@ const handleSubmit = async (e) => {
                 <td className="p-3">
                   {med.image ? (
                    <img
-  src={`${import.meta.env.VITE_API_BASE}${med.image}`}
+  src={med.image}
   alt={med.name}
   className="h-16 w-16 object-cover rounded"
 />
