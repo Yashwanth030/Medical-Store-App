@@ -1,4 +1,4 @@
-# Medical Store Web Application – Summary
+# PharMArt
 Project Overview
 This application is a personal medical store management system designed for a single predefined admin and multiple users. Users can place orders by selecting medicines or uploading handwritten medicine requests. The admin manages inventory and monitors all user orders.
 
