@@ -1,7 +1,15 @@
 const express = require("express");
 const dotenv = require("dotenv");
-const cors = require("cors");
+// const cors = require("cors");
 const path = require("path");
+const corsOptions = {
+  origin: ['https://pharmartt.netlify.app'], // ✅ Netlify frontend
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true, // Optional if you use cookies
+};
+
+app.use(cors(corsOptions));
+
 const uploadRoutes = require("./routes/uploadRoutes");
 
 const orderRoutes = require("./routes/orderRoutes");
