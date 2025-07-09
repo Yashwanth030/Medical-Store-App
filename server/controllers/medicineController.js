@@ -13,7 +13,7 @@ const createMedicine = async (req, res) => {
       requiresPrescription,
     } = req.body;
 
-    const imagePath = req.file ? req.file.path : null;
+    const imagePath = req.file ? req.file.path : medicine.image || null;
 
 
     const medicine = new Medicine({
