@@ -33,18 +33,18 @@ connectDB();
 // Initialize app
 
 
-const fs = require('fs');
-if (!fs.existsSync("uploads")) {
-  fs.mkdirSync("uploads");
-}
+// const fs = require('fs');
+// if (!fs.existsSync("uploads")) {
+//   fs.mkdirSync("uploads");
+// }
 
 // Middleware
-app.use(cors());
+// app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Static folder for uploads
-app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
+// app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 app.use("/api/upload", uploadRoutes);
 // Routes
 app.use("/api/users", userRoutes);
