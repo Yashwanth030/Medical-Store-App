@@ -72,7 +72,7 @@ export default function OrderDetails() {
         <div className="mt-6">
           <h3 className="font-bold mb-2">Prescription:</h3>
           <img
-            src={`${import.meta.env.VITE_API_BASE}${order.prescriptionImage}`}
+            src={order.prescriptionImage}
             alt="Prescription"
             className="h-48 object-contain rounded border"
           />

@@ -105,7 +105,7 @@ export default function PrescriptionOrders() {
             <div key={order._id} className="border p-4 rounded shadow bg-white">
               <h3 className="font-semibold text-gray-800 mb-2">{order.user.name}</h3>
               <img
-                src={`${import.meta.env.VITE_API_BASE}${order.prescriptionImage}`}
+                src={order.prescriptionImage}
                 alt="Prescription"
                 className="h-32 object-contain cursor-pointer"
                 onClick={() => handleImageClick(order.prescriptionImage)}

@@ -13,7 +13,7 @@ const createMedicine = async (req, res) => {
       requiresPrescription,
     } = req.body;
 
-    const imagePath = req.file ? `/uploads/${req.file.filename}` : medicine.image || null;
+    const imagePath = req.file ? req.file.path : null;
 
 
     const medicine = new Medicine({
@@ -73,19 +73,21 @@ const updateMedicine = async (req, res) => {
     // ✅ Update fields individually
     medicine.name = req.body.name || medicine.name;
     medicine.description = req.body.description || medicine.description;
+    medicine.brand = req.body.brand || medicine.brand;
+    medicine.category = req.body.category || medicine.category;
     medicine.price = req.body.price || medicine.price;
     medicine.countInStock = req.body.countInStock || medicine.countInStock;
     medicine.requiresPrescription = req.body.requiresPrescription || medicine.requiresPrescription;
 
     // ✅ Update image if new image is uploaded
-    if (req.file) {
-      medicine.image = `/uploads/${req.file.filename}`;
-    }
-
+if (req.file) {
+  medicine.image = req.file.path;
+}
     const updated = await medicine.save();
     res.json(updated);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+     console.error("❌ Update Error:", err.message);
+    res.status(500).json({ message: "Failed to update medicine", error: err.message });
   }
 };
 

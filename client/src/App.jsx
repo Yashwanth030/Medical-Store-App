@@ -16,7 +16,7 @@ import UploadPrescription from "./pages/UploadPrescription";
 import PrescriptionOrders from './pages/Admin/PrescriptionOrders';
 import Orders from "./pages/Orders";
 import AdminOrders from "./pages/Admin/AdminOrders";
-
+import TrackOrders from './pages/TrackOrders';
 
 function App() {
   // ✅ Grab user info from Redux auth state
@@ -124,7 +124,7 @@ function App() {
     </PrivateRoute>
   }
 />
-
+<Route path="/track-orders" element={<TrackOrders />} />
           {/* ✅ Fallback: redirect unknown routes */}
           <Route path="*" element={<Navigate to="/" />} />
           <Route

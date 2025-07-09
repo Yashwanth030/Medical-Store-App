@@ -5,7 +5,10 @@ const cors = require('cors');
 
 const path = require("path");
 const corsOptions = {
-  origin: ['https://pharmartt.netlify.app'], // ✅ Netlify frontend
+  origin: [
+    "http://localhost:5173",         // ✅ local dev
+    "https://pharmartt.netlify.app"  // ✅ your deployed frontend
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true, // Optional if you use cookies
 };

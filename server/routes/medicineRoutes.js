@@ -1,9 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const path = require("path");
-// const multer = require("multer");
 const upload = require('../middleware/uploadMiddleware');
 const { protect, adminOnly } = require("../middleware/authMiddleware");
+
 const {
   createMedicine,
   getMedicines,
@@ -12,19 +11,7 @@ const {
   deleteMedicine,
 } = require("../controllers/medicineController");
 
-// ✅ Multer storage configuration
-// const storage = multer.diskStorage({
-//   destination(req, file, cb) {
-//     cb(null, "uploads/"); // Make sure this folder exists
-//   },
-//   filename(req, file, cb) {
-//     cb(null, `${Date.now()}-${file.originalname}`);
-//   },
-// });
-
-// const upload = multer({ storage });
-
-// ✅ Upload route (Admin only)
+// ✅ Route for adding new medicine (with Cloudinary image upload)
 router.post(
   "/upload",
   protect,
@@ -43,6 +30,8 @@ router.post(
       } = req.body;
 
       const Medicine = require("../models/Medicine");
+      const imagePath = req.file ? req.file.path : null;
+
       const medicine = new Medicine({
         name,
         description,
@@ -51,12 +40,13 @@ router.post(
         price,
         countInStock,
         requiresPrescription,
-        imageUrl: `/uploads/${req.file.filename}`,
+        image: imagePath, // ✅ Save full Cloudinary URL
       });
 
       const saved = await medicine.save();
       res.status(201).json(saved);
     } catch (err) {
+      console.error("❌ Upload Error:", err.message);
       res.status(400).json({ message: err.message });
     }
   }
@@ -64,11 +54,9 @@ router.post(
 
 // ✅ Other CRUD routes
 router.get("/", getMedicines);
-router.post('/', protect, adminOnly, upload.single('image'), createMedicine);
- 
+router.post("/", protect, adminOnly, upload.single("image"), createMedicine);
 router.get("/:id", getMedicineById);
-router.put("/:id", protect, adminOnly, upload.single('image'), updateMedicine);
-
+router.put("/:id", protect, adminOnly, upload.single("image"), updateMedicine);
 router.delete("/:id", protect, adminOnly, deleteMedicine);
 
 module.exports = router;

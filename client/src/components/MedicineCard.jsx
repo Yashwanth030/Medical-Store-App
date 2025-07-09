@@ -4,7 +4,7 @@ export default function MedicineCard({ med, handleAddToCart }) {
     <div className="border rounded-xl shadow-md p-4 bg-white hover:shadow-lg transition">
       {med.image ? (
         <img
-          src={`${import.meta.env.VITE_API_BASE}${med.image}`}
+          src={med.image} 
           alt={med.name}
           className="h-32 w-full object-cover rounded-md mb-3"
         />
