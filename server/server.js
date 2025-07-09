@@ -7,7 +7,7 @@ const corsOptions = {
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true, // Optional if you use cookies
 };
-
+const app = express();
 app.use(cors(corsOptions));
 
 const uploadRoutes = require("./routes/uploadRoutes");
@@ -26,7 +26,7 @@ const connectDB = require("./config/db");
 connectDB();
 
 // Initialize app
-const app = express();
+
 
 const fs = require('fs');
 if (!fs.existsSync("uploads")) {
