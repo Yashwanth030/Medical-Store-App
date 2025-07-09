@@ -19,7 +19,11 @@ export default function PrescriptionViewer({ imageUrl, ocrText }) {
             <h3 className="font-semibold text-gray-800 mb-2">Extracted Text (OCR):</h3>
             <div className="p-3 border rounded bg-gray-50 text-sm whitespace-pre-wrap max-h-96 overflow-y-auto">
               {ocrText}
+              
+
             </div>
+            
+            
           </div>
         </div>
       </div>

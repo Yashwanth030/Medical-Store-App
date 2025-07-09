@@ -27,7 +27,8 @@ export default function RegisterPage() {
         if (res.role === 'admin') {
           navigate('/admin-dashboard');
         } else {
-          navigate('/');
+          alert("Registration successful. Please login.");
+          navigate('/login');
         }
       })
       .catch(() => {});

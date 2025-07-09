@@ -54,7 +54,8 @@ export default function Orders() {
                       : 'text-yellow-600'
                   }
                 >
-                  {order.status}
+                  {order.status === "Prescription Uploaded" ? "Waiting for Admin Approval" : order.status}
+
                 </span>
               </p>
               <p>
