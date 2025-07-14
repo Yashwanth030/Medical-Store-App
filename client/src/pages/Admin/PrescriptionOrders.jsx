@@ -132,7 +132,14 @@ export default function PrescriptionOrders() {
         </div>
       )}
 
-      {selectedImage && <PrescriptionViewer imageUrl={selectedImage} ocrText={ocrText} />}
+      {selectedImage && (
+  <PrescriptionViewer
+    imageUrl={selectedImage}
+    ocrText={ocrText}
+    onClose={() => setSelectedImage(null)}
+  />
+)}
+
 
       {/* ✅ Confirm Modal */}
       {showModal && (
