@@ -45,7 +45,10 @@ export default function PrescriptionOrders() {
   };
 
   const handleImageClick = async (imagePath) => {
-    const fullImageUrl = `${import.meta.env.VITE_API_BASE}${imagePath}`;
+    const fullImageUrl = imagePath?.startsWith("http")
+  ? imagePath
+  : `${import.meta.env.VITE_API_BASE}${imagePath}`;
+
     setSelectedImage(fullImageUrl);
     setOcrText("Extracting...");
     try {
@@ -105,7 +108,12 @@ export default function PrescriptionOrders() {
             <div key={order._id} className="border p-4 rounded shadow bg-white">
               <h3 className="font-semibold text-gray-800 mb-2">{order.user.name}</h3>
               <img
-                src={order.prescriptionImage}
+                // src={order.prescriptionImage}
+               src={
+               order.prescriptionImage?.startsWith("http")
+               ? order.prescriptionImage
+               : `${import.meta.env.VITE_API_BASE}${order.prescriptionImage}`
+               }
                 alt="Prescription"
                 className="h-32 object-contain cursor-pointer"
                 onClick={() => handleImageClick(order.prescriptionImage)}
